@@ -23,38 +23,39 @@ import ultraModule
 from time import sleep
 
 def go_forward(speed):
-'''전진
+	'''전진
 
 	양 모터의 방향을 True, 속도를 speed로 설정해줍니다.
-'''
+	'''
 	car.engine(True, True, speed, speed)
 
 def go_backward(speed):
-'''후진
+	'''후진
+
 	양 모터의 방향을 False, 속도를 speed로 설정해줍니다.
-'''
+	'''
 	car.engine(False, False, speed, speed)
 
 def stop():
-'''정지
+	'''정지
 
 	차를 정지합니다. car.turnOff()를 부르면 아예 GPIO를 clean시키기 때문에 일시정지에 사용합니다.
-'''
+	'''
 	car.engine(True, True, 0, 0)
 
 def swing_turn(direction, speed, term):
-'''스윙 턴
+	'''스윙 턴
 
 	direction이 True이면 left, False이면 right으로 swing turn
-'''
-	car.engine(True, True, speed * not direction, speed * direction)
+	'''
+	car.engine(True, True, speed * (not direction), speed * direction)
 	sleep(term)
 
 def point_turn(direction, speed, term):
-'''포인트 턴
+	'''포인트 턴
 
 	direction이 True이면 left, False이면 right으로 point turn
-'''
+	'''
 	car.engine(not direction, direction, speed, speed)
 	sleep(term)
 ###이 위의 모든 함수는 임시 함수로 필요에 따라 수정하시면 됩니다.
@@ -63,13 +64,110 @@ def point_turn(direction, speed, term):
 
 
 def avoid(direction):
-'''장애물 회피 comment 입력 필요'''
-	dummy=1
+	'''장애물 회피 comment 입력 필요'''
+	#sample code, 아마 도착시 대각선으로 닿아 있는 편이 좋을 듯
+	turn_way=True
+	if direction == 'r':
+		turn_way=False
+	swing_turn(turn_way, 40, 3)
+	go_forward(20)
+	sleep(1)
+	swing_turn(not turn_way, 20, 3)
+	go_forward(20)
+	sleep(1)
+	swing_turn(not turn_way, 20, 3)
+	go_forward(20)
+	sleep(1)
+	#여기까지 했는데 검은 선에 안닿았다. 이 경우 추가 코드 작성도 좋을듯
+	li=trackingmodule.navigator()
+	if 
 
-def lineTracking(speed):
-'''선을 따라 주행 comment 입력 필요'''
-	dummy=1
-	return False
+def lineTracking(direction):
+	'''선을 따라 주행 comment 입력 필요
+
+	r은 내부 l는 외부주행
+	내부 주행 외부 주행은 서로 요구하는 led방향이 반대
+	reverse 여부는 바퀴 출력 순서 반대
+	평가 요구사함
+	바깥은 좌회전으로
+	내부는 우회전으로
+	즉 서로 led와 바퀴 출력 순서가 반대
+
+	둘다 안들어온다면 지그재그 주행
+	'''
+
+	#when input l
+	lSpeed=22
+	rSpeed=17
+	li=trackingmodule.navigator()
+	if direction == 'l' or direction == 'r':
+		if li[0]==False:
+			lSpeed=0
+			rSpeed=30
+		elif li[1]==False:
+			lSpeed=17
+			rSpeed=22
+		elif li[2]==False:
+			if li[1]==True:
+				lSpeed=17
+				rSpeed=22
+			else:
+				lSpeed=22
+				rSpeed=17
+		elif li[3]==False:
+			lSpeed=22
+			rSpeed=17
+		elif li[4]==False:
+			lSpeed=25
+			rSpeed=0
+		
+		if direction =='l':
+			car.engine(True, True, lSpeed, rSpeed)
+		else:
+			car.engine(True, True, lSpeed, rSpeed+1)
+		return True	
+
+	else:
+		lSpeed=15
+		rSpeed=15
+		counter=0
+		while not li[3]==True:
+			li=trackingmodule.navigator()
+			car.engine(True, True, 15+counter,0)
+			sleep(0.1)
+			print(counter)
+			if counter<5:
+				counter=counter+1
+		counter=0
+		while not li[4]==True:
+			li=trackingmodule.navigator()
+			car.engine(True, True, 15+counter, 0)
+			sleep(0.1)
+			print(counter)
+			if counter<10:
+				counter=counter+1
+		counter=0
+		while not li[0]==True:
+			li=trackingmodule.navigator()
+			car.engine(True, True, 0, 15+counter)
+			sleep(0.1)
+			print(counter)
+			if counter<5:
+				counter=counter+1
+		counter=0
+		while not li[1]==True:
+			li=trackingmodule.navigator()
+			car.engine(True, True, 0, 15+counter)
+			sleep(0.1)
+			print(counter)
+			if counter<10:
+				counter=counter+1
+		
+		if li[0] and li[1] and li[2] and li[3] and li[4]:
+			car.engine(True,True, 15, 15)
+			sleep(0.01)	
+
+	return True
 
 if __name__ == "__main__":
 	try:
@@ -77,13 +175,13 @@ if __name__ == "__main__":
 		dis=13###수정해도 됨 
 		#차 시동을 건다.
 		car.startUp()
+		endline= True
 		while endline:
-			way = trackingmodule.myPosition()###추적센서
 			distance = ultraModule.getDistance()###초음파센서
 			if distance <= dis:
 				avoid(Tmode)
 			else:
-				endline = lineTracking(speed)###dummy로 무한루프
+				endline = lineTracking(Tmode)###dummy로 무한루프
 				
 		#차 시동을 끈다.
 		car.turnOff()

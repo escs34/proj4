@@ -120,15 +120,10 @@ try:
 except KeyboardInterrupt:
     GPIO.cleanup()
 '''
-def myPosition():
-'''return current position'''
-	return 1 * GPIO.input(leftmostled) + 2 * GPIO.input(leftlessled) + 4 * GPIO.input(centerled) + 8 * GPIO.input(rightlessled) + 16 * GPIO.input(rightmostled)
-
-
-'''
+def navigator():
+	'''return current position'''
 	li=[GPIO.input(leftmostled), GPIO.input(leftlessled), GPIO.input(centerled), GPIO.input(rightlessled), GPIO.input(rightmostled)]
 	return li
 
-'''
 
 
