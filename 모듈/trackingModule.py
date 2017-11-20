@@ -107,8 +107,7 @@ GPIO.setup(rightmostled, GPIO.IN)
 #
 # =======================================================================
 
-'''
-try:
+'''try:
     while True:
        print("leftmostled  detects black line(0) or white ground(1): " + str(GPIO.input(leftmostled)))
        print("leftlessled  detects black line(0) or white ground(1): " + str(GPIO.input(leftlessled)))
@@ -118,12 +117,30 @@ try:
        time.sleep(1)
              
 except KeyboardInterrupt:
-    GPIO.cleanup()
-'''
+    GPIO.cleanup()'''
 def navigator():
 	'''return current position'''
-	li=[GPIO.input(leftmostled), GPIO.input(leftlessled), GPIO.input(centerled), GPIO.input(rightlessled), GPIO.input(rightmostled)]
-	return li
+	bit=(not GPIO.input(leftmostled))+(not GPIO.input(leftlessled)) * 2 + (not GPIO.input(centerled)) * 4 + (not GPIO.input(rightlessled))*8 + (not GPIO.input(rightmostled))*16
+	return bit
 
+def bit1():
+	return not GPIO.input(leftmostled)
 
+def bit2():
+	return not GPIO.input(leftlessled)
 
+def bit4():
+	return not GPIO.input(centerled)
+
+def bit8():
+	return not GPIO.input(rightlessled)
+
+def bit16():
+	return not GPIO.input(rightmostled)
+
+def bitCount():
+	return bit1() + bit2() + bit4() + bit8() + bit16()
+
+if __name__ == "__main__":
+	while True:
+		print(bitCount())
